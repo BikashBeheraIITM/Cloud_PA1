@@ -1,0 +1,4 @@
+{
+    "python.linting.enabled": true,
+    "python.pythonPath": "cenv/bin/python3.7"
+}
