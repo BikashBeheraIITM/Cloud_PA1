@@ -14,7 +14,7 @@ async def new_user(request):
         response_obj = {'status':'failed','message':str(e)}
         return web.Response(text=json.dumps(response_obj),status=500)
 
-app = web.Application()
-app.router.add_get('/',handle)
-app.router.add_post('/user',new_user)
-web.run_app(app)
+application = web.Application()
+application.router.add_get('/',handle)
+application.router.add_post('/user',new_user)
+web.run_app(application)
