@@ -1,6 +1,6 @@
 import asyncio
 from aiohttp import ClientSession
-rate = 10000
+rate = 100
 async def send(url,i):
     data = '?n='+str(i)
     async with ClientSession() as s, s.post(url+data) as res:
