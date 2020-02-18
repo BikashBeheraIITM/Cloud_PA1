@@ -1,32 +1,30 @@
+from aiohttp import ClientSession, TCPConnector
 import asyncio
-from aiohttp import ClientSession
-import time
-rate = int(input("No of requests to be sent at once: "))
+import sys
+from pypeln import TaskPool
+import random 
 
-async def send(url,i):
+limit = int(input("Enter Rate of Requests per second: "))
+
+async def send(url, session):
+    i = random.randint(1,101)
     data = '?n='+str(i)
-    async with ClientSession() as s, s.post(url+data) as res:
-        #ret = await res.read()
-        return await s.close()
-        #return ret
+    async with session.post(url+data) as response:
+        return await response.read()
 
-async def print_when_done(tasks):
-    for res in asyncio.as_completed(tasks):
-        await res
-        
+async def main(url):
+    connector = TCPConnector(limit=None)
+    i = 0
+    req_cnt = 0
+    async with ClientSession(connector=connector) as session, TaskPool(limit,loop) as tasks:
+        while True:
+            i+=1
+            if i%1000==0:
+                req_cnt+=1
+            await tasks.put(send(url, session))
+            
 
-url_aws = "http://cloudserverlb-76348161.us-east-1.elb.amazonaws.com/"
-url_local = "http://0.0.0.0:8080/"
 
-while True:
-    START = time.monotonic()
-    mil_req = [send(url_aws,i%100) for i in range(rate)]
-    req = time.monotonic() - START
-    print(f"Time to send {rate} requests: ",req)
-    try:
-        asyncio.run(print_when_done(mil_req))
-    except Exception as e:
-        print(e)
-        exit()
-    now = time.monotonic() - START
-    print(f"Response time to process {rate} requests: ",now)
+url = "http://cloudserverlb-76348161.us-east-1.elb.amazonaws.com/"
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main(url))
